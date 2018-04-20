@@ -82,6 +82,7 @@ noClass.forEach(obj => {
 
 function calcErrorPos(obj) {
     let yLine = obj.x * k + d;
+    console.log('yline', yLine, 'obj.y', obj.y);
     return yLine >= obj.y;
 }
 
@@ -139,6 +140,8 @@ function runOptimization(maxIterations) {
         }
         console.log('k and optimizedK', k, optimizedK);
         k = k + 0.1;
+        calcStartAndEnd();
+        draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
     //reset k
     k = startk;
@@ -149,6 +152,8 @@ function runOptimization(maxIterations) {
             break;
         }
         k = k - 0.1;
+        calcStartAndEnd();
+        draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
     k = optimizedK;
 }
