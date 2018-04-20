@@ -18,43 +18,51 @@ let totalSumXY = 0;
 let totalxiSquare = 0;
 
 sample.forEach(obj => {
-   sumX+= obj.x * grid;
-   sumY+= grid - obj.y * grid;
-   total++;
+    sumX += obj.x * grid;
+    sumY += grid - obj.y * grid;
+    total++;
 });
 
 const avgX = sumX / total;
 const avgY = sumY / total;
 
 sample.forEach(obj => {
-    xi.push(obj.x*grid-avgX);
-    yi.push((grid-obj.y*grid)-avgY);
+    xi.push(obj.x * grid - avgX);
+    yi.push((grid - obj.y * grid) - avgY);
 });
 
-for(let i = 0; i < total; i++) {
+for (let i = 0; i < total; i++) {
     sumXiYi.push(xi[i] * yi[i]);
     let value = Math.pow((sample[i].x * grid - avgX), 2);
     xiSqaureSum.push(value);
 }
 
 sumXiYi.forEach(value => {
-   totalSumXY += value;
+    totalSumXY += value;
 });
 
 xiSqaureSum.forEach(value => {
-   totalxiSquare += value;
+    totalxiSquare += value;
 });
 
-const k = totalSumXY/totalxiSquare;
+let k = totalSumXY / totalxiSquare;
 
-const d = avgY - k*avgX;
+let d = avgY - k * avgX;
 
-const startX = 0;
-const startY = k*startX+d;
+let startX;
+let startY;
+let endX;
+let endY;
 
-const endX = grid;
-const endY = k*endX+d;
+function calcStartAndEnd() {
+    startX = 0;
+    startY = k * startX + d;
 
+    endX = grid;
+    endY = k * endX + d;
+}
+
+calcStartAndEnd();
 
 //draw the result
 const pos = data.getPositive();
@@ -73,7 +81,7 @@ noClass.forEach(obj => {
 
 
 function calcErrorPos(obj) {
-    let yLine = obj.x*k+d;
+    let yLine = obj.x * k + d;
     return yLine >= obj.y;
 }
 
@@ -81,19 +89,71 @@ function calcErrorNeg(obj) {
     let yLine = obj.x * k + d;
     return yLine < obj.y;
 }
-let cnt =0;
-pos.forEach(obj => {
-  if( calcErrorPos(obj)) {
-      cnt++;
-  }
-});
 
-let negcnt = 0;
-neg.forEach(obj => {
-    if( calcErrorNeg(obj)) {
-        negcnt++;
+function posErrors() {
+    let cnt = 0;
+    pos.forEach(obj => {
+        if (calcErrorPos(obj)) {
+            cnt++;
+        }
+    });
+    return cnt;
+}
+
+function negErrors() {
+    let negcnt = 0;
+    neg.forEach(obj => {
+        if (calcErrorNeg(obj)) {
+            negcnt++;
+        }
+    });
+    return negcnt;
+}
+
+let minErrors = 1000;
+let optimizedK = k;
+
+function optimization() {
+    console.log('negError:', negErrors(), 'posError:', posErrors());
+    let currentErrors = negErrors() + posErrors();
+    if (minErrors > currentErrors) {
+        minErrors = currentErrors;
+        optimizedK = k;
+        console.log('improved', optimizedK, k);
     }
-});
+    if (minErrors + 10 < currentErrors) {
+        console.log(optimizedK, k);
+        return false
+    }
+    console.log('minError:', minErrors, 'currentError:', currentErrors);
+    return true;
+}
 
+function runOptimization(maxIterations) {
+    let startk = k;
+    for (let i = 0; i < maxIterations; i++) {
+        //break if no more optimization with k
+        if (!optimization()) {
+            console.log('broken pos', i);
+            break;
+        }
+        console.log('k and optimizedK', k, optimizedK);
+        k = k + 0.1;
+    }
+    //reset k
+    k = startk;
+    for (let i = 0; i < maxIterations; i++) {
+        //break if no more optimization with k
+        if (!optimization()) {
+            console.log('broken neg');
+            break;
+        }
+        k = k - 0.1;
+    }
+    k = optimizedK;
+}
+
+runOptimization(500);
+calcStartAndEnd();
 
 draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
