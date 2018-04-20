@@ -3,49 +3,97 @@
 import * as data from './cleanData.js';
 import * as draw from './draw.js';
 
+const sample = data.getData();
+const grid = 200;
+
+let sumX = 0;
+let sumY = 0;
+let total = 0;
+
+const xi = []; // xi is (obj.x - sumX)
+const yi = []; // yi is (obj.y - sumY)
+const sumXiYi = []; // sumXiYi is (xi* yi)
+const xiSqaureSum = []; // (obj.x - sumX)^2
+let totalSumXY = 0;
+let totalxiSquare = 0;
+
+sample.forEach(obj => {
+   sumX+= obj.x * grid;
+   sumY+= grid - obj.y * grid;
+   total++;
+});
+
+const avgX = sumX / total;
+const avgY = sumY / total;
+
+sample.forEach(obj => {
+    xi.push(obj.x*grid-avgX);
+    yi.push((grid-obj.y*grid)-avgY);
+});
+
+for(let i = 0; i < total; i++) {
+    sumXiYi.push(xi[i] * yi[i]);
+    let value = Math.pow((sample[i].x * grid - avgX), 2);
+    xiSqaureSum.push(value);
+}
+
+sumXiYi.forEach(value => {
+   totalSumXY += value;
+});
+
+xiSqaureSum.forEach(value => {
+   totalxiSquare += value;
+});
+
+const k = totalSumXY/totalxiSquare;
+
+const d = avgY - k*avgX;
+
+const startX = 0;
+const startY = k*startX+d;
+
+const endX = grid;
+const endY = k*endX+d;
+
+
+//draw the result
 const pos = data.getPositive();
 const neg = data.getNegative();
+pos.forEach(obj => {
+    draw.rectangel(obj.x * grid, grid - obj.y * grid, 'red');
+});
+neg.forEach(obj => {
+    draw.rectangel(obj.x * grid, grid - obj.y * grid, 'blue');
+});
+
 const noClass = data.getUnclassified();
-const midpoint = {x: 0.5, y: 0.5};
+noClass.forEach(obj => {
+    draw.rectangel(obj.x * grid, grid - obj.y * grid, 'green');
+});
 
-let posY, negY;
-let posX = 1;
-let negX = 0;
 
-// draw positive values
+function calcErrorPos(obj) {
+    let yLine = obj.x*k+d;
+    return yLine >= obj.y;
+}
+
+function calcErrorNeg(obj) {
+    let yLine = obj.x * k + d;
+    return yLine < obj.y;
+}
+let cnt =0;
 pos.forEach(obj => {
-    draw.rectangel(obj.x * 200, 200 - obj.y * 200, 'red');
+  if( calcErrorPos(obj)) {
+      cnt++;
+  }
 });
 
-// draw negative values
+let negcnt = 0;
 neg.forEach(obj => {
-    draw.rectangel(obj.x * 200, 200 - obj.y * 200, 'blue');
-});
-
-// the point of the positive values, which is closest to the 0 point
-pos.forEach(obj => {
-    if (obj.x < posX) {
-        posX = obj.x;
-        posY = obj.y;
-    }
-});
-// the point of the negative values, which is closest to the 1 point
-neg.forEach(obj => {
-    if (obj.x > negX) {
-        negX = obj.x;
-        negY = obj.y;
+    if( calcErrorNeg(obj)) {
+        negcnt++;
     }
 });
 
-posX = posX * 200;
-negX = negX * 200;
-negY = 200 - negY * 200;
-posY = 200 - posY * 200;
 
-console.log('pos point', posX, posY);
-console.log('neg point', negX, negY);
-
-
-draw.rectangel(negX, negY, 'green');
-draw.rectangel(posX, posY, 'deeppink');
-draw.line({x: posX, y: posY}, {x: negX, y: negY}, 'black');
+draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');

@@ -4,6 +4,7 @@ import { rawData01, rawData02 } from  './data.js';
 const negative = [];
 const positive = [];
 const unclassified = [];
+const data = [];
 
 function parseObj(obj) {
     const newObj = {};
@@ -13,7 +14,7 @@ function parseObj(obj) {
     return newObj;
 }
 
-rawData01.forEach(obj => {
+rawData02.forEach(obj => {
     if (obj.class === -1) {
         negative.push(parseObj(obj));
     }
@@ -23,6 +24,7 @@ rawData01.forEach(obj => {
     if (obj.class === '') {
         unclassified.push(parseObj(obj));
     }
+    data.push(parseObj(obj));
 });
 
 export function getNegative() {
@@ -35,4 +37,8 @@ export function getPositive() {
 
 export function getUnclassified() {
     return unclassified;
+}
+
+export function getData() {
+    return data;
 }
