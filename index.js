@@ -81,14 +81,14 @@ noClass.forEach(obj => {
 
 
 function calcErrorPos(obj) {
-    let yLine = obj.x * k + d;
-    console.log('yline', yLine, 'obj.y', obj.y);
-    return yLine >= obj.y;
+    let yLine = (obj.x * grid) * k + d;
+   // console.log('yline', yLine, 'obj.y', grid - obj.y * grid);
+    return yLine >= grid - grid * obj.y;
 }
 
 function calcErrorNeg(obj) {
-    let yLine = obj.x * k + d;
-    return yLine < obj.y;
+    let yLine = (obj.x * grid) * k + d;
+    return yLine < grid - obj.y * grid;
 }
 
 function posErrors() {
@@ -141,7 +141,7 @@ function runOptimization(maxIterations) {
         console.log('k and optimizedK', k, optimizedK);
         k = k + 0.1;
         calcStartAndEnd();
-        draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
+        // draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
     //reset k
     k = startk;
@@ -153,7 +153,7 @@ function runOptimization(maxIterations) {
         }
         k = k - 0.1;
         calcStartAndEnd();
-        draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
+        // draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
     k = optimizedK;
 }
