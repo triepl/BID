@@ -82,7 +82,6 @@ noClass.forEach(obj => {
 
 function calcErrorPos(obj) {
     let yLine = obj.x * k + d;
-    console.log('yline', yLine, 'obj.y', obj.y);
     return yLine >= obj.y;
 }
 
@@ -96,6 +95,7 @@ function posErrors() {
     pos.forEach(obj => {
         if (calcErrorPos(obj)) {
             cnt++;
+            console.log(obj)
         }
     });
     return cnt;
@@ -106,31 +106,35 @@ function negErrors() {
     neg.forEach(obj => {
         if (calcErrorNeg(obj)) {
             negcnt++;
+            console.log(obj)
         }
     });
     return negcnt;
 }
 
+
 let minErrors = 1000;
 let optimizedK = k;
+let optimizedObj = {k: k, d: d};
 
 function optimization() {
     console.log('negError:', negErrors(), 'posError:', posErrors());
     let currentErrors = negErrors() + posErrors();
     if (minErrors > currentErrors) {
         minErrors = currentErrors;
-        optimizedK = k;
-        console.log('improved', optimizedK, k);
+        optimizedObj = {k:k, d:d};
+        //optimizedK = k;
+        //console.log('improved', optimizedK, k);
     }
     if (minErrors + 10 < currentErrors) {
-        console.log(optimizedK, k);
+        //console.log(optimizedK, k);
         return false
     }
     console.log('minError:', minErrors, 'currentError:', currentErrors);
     return true;
 }
 
-function runOptimization(maxIterations) {
+function runOptimizationK(maxIterations) {
     let startk = k;
     for (let i = 0; i < maxIterations; i++) {
         //break if no more optimization with k
@@ -139,9 +143,9 @@ function runOptimization(maxIterations) {
             break;
         }
         console.log('k and optimizedK', k, optimizedK);
-        k = k + 0.1;
-        calcStartAndEnd();
-        draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
+        k = k + 0.2;
+        //calcStartAndEnd();
+        //draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
     //reset k
     k = startk;
@@ -151,14 +155,35 @@ function runOptimization(maxIterations) {
             console.log('broken neg');
             break;
         }
-        k = k - 0.1;
-        calcStartAndEnd();
-        draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
+        k = k - 0.2;
+        //calcStartAndEnd();
+        //draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
-    k = optimizedK;
+    k = optimizedObj.k;
 }
 
-runOptimization(500);
+function optimizationDandK(maxIteration) {
+    let startD = d;
+    for (let i = 0; i < maxIteration; i++) {
+        if (!optimization()) {
+            break;
+        }
+        runOptimizationK(30);
+        d = d + 0.2;
+    }
+    d = startD;
+    for (let i = 0; i < maxIteration; i++) {
+        if (!optimization()) {
+            break;
+        }
+        runOptimizationK(30);
+        //console.log('k and optimizedK', k, optimizedK);
+        d = d - 0.2;
+    }
+    d = optimizedObj.d;
+}
+optimizationDandK(50);
+//runOptimizationK(500);
 calcStartAndEnd();
 
 draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
