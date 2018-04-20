@@ -14,7 +14,7 @@ function parseObj(obj) {
     return newObj;
 }
 
-rawData02.forEach(obj => {
+rawData01.forEach(obj => {
     if (obj.class === -1) {
         negative.push(parseObj(obj));
     }

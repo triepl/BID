@@ -79,34 +79,19 @@ noClass.forEach(obj => {
     draw.rectangel(obj.x * grid, grid - obj.y * grid, 'green');
 });
 
-function calcErrorPosA(obj) {
+
+function calcErrorPos(obj) {
     let yLine = (obj.x * grid) * k + d;
    // console.log('yline', yLine, 'obj.y', grid - obj.y * grid);
     return yLine >= grid - grid * obj.y;
 }
 
-function calcErrorNegA(obj) {
+function calcErrorNeg(obj) {
     let yLine = (obj.x * grid) * k + d;
     return yLine < grid - obj.y * grid;
 }
 
-function calcErrorPosB(obj) {
-    let yLine = (obj.x * grid) * k + d;
-    // console.log('yline', yLine, 'obj.y', grid - obj.y * grid);
-    return yLine <= grid - grid * obj.y;
-}
-
-function calcErrorNegB(obj) {
-    let yLine = (obj.x * grid) * k + d;
-    return yLine > grid - obj.y * grid;
-}
-
-let calcObj = {
-    A:{calcErrorPos:calcErrorPosA, calcErrorNeg: calcErrorNegA, type: 'A'},
-    B:{calcErrorPos:calcErrorPosB, calcErrorNeg: calcErrorNegB, type: 'B'}
-};
-
-function posErrors(calcErrorPos) {
+function posErrors() {
     let cnt = 0;
     pos.forEach(obj => {
         if (calcErrorPos(obj)) {
@@ -116,7 +101,7 @@ function posErrors(calcErrorPos) {
     return cnt;
 }
 
-function negErrors(calcErrorNeg) {
+function negErrors() {
     let negcnt = 0;
     neg.forEach(obj => {
         if (calcErrorNeg(obj)) {
@@ -126,100 +111,54 @@ function negErrors(calcErrorNeg) {
     return negcnt;
 }
 
-
-
-function getErrorTypeByCategory(){
-    let aCount = negErrors(calcObj.A.calcErrorNeg) + posErrors(calcObj.A.calcErrorPos);
-    let bCount = negErrors(calcObj.B.calcErrorNeg) + posErrors(calcObj.B.calcErrorPos);
-    return aCount < bCount ? calcObj.A  : calcObj.B;
-}
-
 let minErrors = 1000;
-let optimizedObj = {k: k, d: d};
+let optimizedK = k;
 
 function optimization() {
-    let errorTypeByCategory = getErrorTypeByCategory();
-
-    //console.log('negError:', negErrors(errorTypeByCategory.calcErrorNeg), 'posError:', posErrors(errorTypeByCategory.calcErrorPos));
-    let currentErrors = negErrors(errorTypeByCategory.calcErrorNeg) + posErrors(errorTypeByCategory.calcErrorPos);
+    console.log('negError:', negErrors(), 'posError:', posErrors());
+    let currentErrors = negErrors() + posErrors();
     if (minErrors > currentErrors) {
         minErrors = currentErrors;
-        optimizedObj = {k:k, d:d};
-        //optimizedK = k;
-        console.log('improved currentErrors:', currentErrors);
-
+        optimizedK = k;
+        console.log('improved', optimizedK, k);
     }
     if (minErrors + 10 < currentErrors) {
-        //console.log(optimizedK, k);
+        console.log(optimizedK, k);
         return false
     }
     console.log('minError:', minErrors, 'currentError:', currentErrors);
     return true;
 }
 
-function runOptimizationK(maxIterations) {
+function runOptimization(maxIterations) {
     let startk = k;
-    const adaptionK = 0.15;
     for (let i = 0; i < maxIterations; i++) {
         //break if no more optimization with k
         if (!optimization()) {
+            console.log('broken pos', i);
             break;
         }
-        k = k + adaptionK;
+        console.log('k and optimizedK', k, optimizedK);
+        k = k + 0.1;
+        calcStartAndEnd();
+        // draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
     //reset k
     k = startk;
-    for (let j = 0; j < maxIterations; j++) {
+    for (let i = 0; i < maxIterations; i++) {
         //break if no more optimization with k
-       optimization();
-        /* if (!optimization()) {
+        if (!optimization()) {
             console.log('broken neg');
             break;
-        }*/
-        k = k - adaptionK;
-
-    }
-    k = optimizedObj.k;
-}
-
-function getOptimalAdatptionForD(d){
-    if(d > 50 && d < 150){
-        return 2;
-    }else if (d > 0 && d < 200){
-        return 5;
-    }else if (d > -100 && d < 300){
-        return 10;
-    }
-    return 100;
-}
-
-function optimizationDandK(maxIteration) {
-    let startD = d;
-
-    for (let i = 0; i < maxIteration; i++) {
-
-        if (!optimization()) {
-            break;
         }
-        runOptimizationK(50);
-
-        let optimalAdaption = getOptimalAdatptionForD(d);
-
-        d = d + optimalAdaption;
+        k = k - 0.1;
+        calcStartAndEnd();
+        // draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
     }
-    d = startD;
-    for (let j = 0; j < maxIteration; j++) {
-
-        optimization();
-        runOptimizationK(50);
-
-        let optimalAdaption = getOptimalAdatptionForD(d);
-        d = d - optimalAdaption;
-    }
-    d = optimizedObj.d;
+    k = optimizedK;
 }
-optimizationDandK(100);
-//runOptimizationK(500);
+
+runOptimization(500);
 calcStartAndEnd();
-console.log(k);
+
 draw.line({x: startX, y: startY}, {x: endX, y: endY}, 'black');
